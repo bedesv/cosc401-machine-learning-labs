@@ -19,6 +19,15 @@ def match(code, x):
     """Takes a code and returns True if the corresponding hypothesis returns
     True (positive) for the given input."""
     return decode(code)(x)
+
+def element_lge(element_a, element_b):
+    """
+        Takes two elements and returns True if element_a is less general or equal
+        to element_b.
+    """
+    if element_a is None or element_b == "?" or element_a == element_b or (element_a == "?" and element_a == element_b):
+        return True
+    return False
     
 def lge(code_a, code_b):
     """Takes two codes and returns True if code_a is less general or equal
@@ -27,8 +36,9 @@ def lge(code_a, code_b):
     # Complete this for the conjunction of constraints. You do not need to
     # decode the given codes.
     for i in range(len(code_a)):
-        pass
-
+        if not element_lge(code_a[i], code_b[i]):
+            return False
+    return True
 
     
 
@@ -54,16 +64,19 @@ def minimal_generalisations(code, x):
     """Takes a code (corresponding to a hypothesis) and returns the set of all
     codes that are the minimal generalisations of the given code with respect
     to the given input x."""
+    for i in range(len(code)):
+        for j in range(i+1, len(code)):
+            
+
     
-    # Return an appropriate set
 
 
 def minimal_specialisations(cc, domains, x):
     """Takes a code (corresponding to a hypothesis) and returns the set of all
     codes that are the minimal specialisations of the given code with respect
     to the given input x."""
-    
-    # Return an appropriate set
+    [domain.add() for domain in domains]
+    all_specialisations = input_space(domains)
 
 
 def cea_trace(domains, D):
@@ -77,12 +90,19 @@ def cea_trace(domains, D):
     
     for x, y in D:
         if y: # if positive
-            pass
-            # Complete
+            [G.remove(g) for g in G if not match(g, x)]
+            for s in [s for s in S if not match(s, x)]:
+                S.remove(s)
+                for h in minimal_generalisations(g, x):
+                    if match(h, x):
             
         else: # if negative
-            pass
-            # Complete
+            [S.remove(s) for s in S if match(s, x)]
+            for g in [g for g in G if not match(g, x)]:
+                G.remove(g)
+                for h in minimal_specialisations(g, domains, x):
+                    if not match(h, x):
+            
 
         # Append S and G (or their copy) to corresponding trace list
 
