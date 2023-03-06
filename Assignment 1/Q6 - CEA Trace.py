@@ -26,6 +26,10 @@ def lge(code_a, code_b):
     
     # Complete this for the conjunction of constraints. You do not need to
     # decode the given codes.
+    for i in range(len(code_a)):
+        pass
+
+
     
 
             
