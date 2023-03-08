@@ -62,15 +62,14 @@ def minimal_generalisations(code, x):
     codes that are the minimal generalisations of the given code with respect
     to the given input x."""
     output = set()
-
+    code_copy = list(code).copy()
     for i in range(len(code)):
-        if element_lge(code[i], x[i]):
-            code_copy = list(code)
-            if code[i] is None:
-                code_copy[i] = x[i]
-            else:
-                code_copy[i] = "?"
-            output.add(tuple(code_copy))
+            
+        if code[i] is None:
+            code_copy[i] = x[i]
+        elif code[i] != x[i]:
+            code_copy[i] = "?"
+    output.add(tuple(code_copy))
     return output
 
 def minimal_specialisations(cc, domains, x):
@@ -80,12 +79,12 @@ def minimal_specialisations(cc, domains, x):
     output = set()
 
     for i in range(len(cc)):
-        if not element_lge(x[i], cc[i]):
-            for new_element in domains[i] - set(x[i]):
-                code_copy = list(cc)
-                code_copy[i] = new_element
-                output.add(tuple(code_copy))
+        for new_element in domains[i] - set(x[i]):
+            code_copy = list(cc)
+            code_copy[i] = new_element
+            output.add(tuple(code_copy))
     
+    print("min_spec",output)
     return output
 
 
@@ -100,10 +99,18 @@ def cea_trace(domains, D):
     for x, y in D:
         if y: # if positive
             G = {g for g in G if match(g, x)}
+            print("sbef",S)
             for s in [s for s in S if not match(s, x)]:
                 S.remove(s)
-                S = S.union(minimal_generalisations(s, x))
+                for h in minimal_generalisations(s, x):
+                    
+                    for g in G:
+                        if (lge(h, g)) and g != h:
+                            S.add(h)
+                            break
+                # S = S.union(minimal_generalisations(s, x))
             new_S = set()
+            print("smid",S)
             for s in S:
                 more_general = True
                 for j in S:
@@ -113,23 +120,31 @@ def cea_trace(domains, D):
                     new_S.add(s)
             
             S = new_S
+            print("saft",S)
 
         else: # if negative
             S = {s for s in S if not match(s, x)}
-            for g in [g for g in G if not match(g, x)]:
+            print("G before", G)
+            for g in [g for g in G if match(g, x)]:
                 G.remove(g)
-                G = G.union(minimal_specialisations(g, domains, x))
-
+                for h in minimal_specialisations(g, domains, x):
+                    if h != x:
+                        for s in S:
+                            if (lge(s, h)) and s != h:
+                                G.add(h)
+                                break
+            print("G mid", G)
             new_G = set()
             for g in G:
                 more_specific = True
-                for j in G:
+                for j in S:
                     if g != j:
-                        more_specific = more_specific and lge(s, j)
+                        more_specific = more_specific and lge(g, j)
                 if more_specific:
-                    new_G.add(s)
+                    new_G.add(g)
             
             G = new_G
+            print("G after", G)
             
 
         S_trace.append(S)
@@ -199,4 +214,6 @@ if __name__ == "__main__":
     S_trace, G_trace = cea_trace(domains, training_examples)
 
     [print(str(s) + "\n") for s in S_trace]
+
+    print("G Trace")
     [print(str(g) + "\n") for g in G_trace]
