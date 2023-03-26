@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
     t = train_tree(training_examples, misclassification)
     for example in training_examples:
-        print(t.predict(example[0]))
+        assert (t.predict(example[0])) == example[1]
 
 
     examples = [
@@ -189,7 +189,7 @@ if __name__ == "__main__":
         ((False, False, False), False)
     ]
 
-    # g = train_tree(examples, misclassification)
-    # for example in examples:
-    #     print(g.predict(example[0]))
+    g = train_tree(examples, misclassification)
+    for example in examples:
+        assert (g.predict(example[0])) == example[1]
 
