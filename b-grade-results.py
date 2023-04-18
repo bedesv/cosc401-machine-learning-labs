@@ -1,8 +1,22 @@
-from itertools import permutations
+from itertools import permutations, product
 from copy import deepcopy
 from statistics import mode
 
 placing_points = [20, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3]
+
+top_6 = ["Butchers",
+    "Raiders",
+    "Drones",
+    "Vortex",
+    "Silver",
+    "Rust"]
+
+bottom_6 = ["Paladins",
+    "Monsoon",
+    "Steel",
+    "Sentinels",
+    "Knights",
+    "Slackers"]
 
 curr_points = {
     "Butchers": [16, 20],
@@ -10,29 +24,52 @@ curr_points = {
     "Drones": [20, 9],
     "Vortex": [None, 12],
     "Silver": [9, 14],
-    "Knights": [14, 8],
+    "Knights": [12, 8],
     "Rust": [10, 10],
-    "Paladins": [12, 7],
-    # "Monsoon": [None, 6],
-    # "Steel": [8, 3],
-    # "Sentinels": [7, 4],
-    # "Slackers": [6, 5]
+    "Paladins": [14, 7],
+    "Monsoon": [None, 6],
+    "Steel": [8, 3],
+    "Sentinels": [7, 4],
+    "Slackers": [6, 5]
 }
 
-make_final = []
-dont_make_final = []
+team_results = {
+    "Butchers": [[], [], 12, 1, [], []],
+    "Raiders": [[], [], 12, 1, [], []],
+    "Drones": [[], [], 12, 1, [], []],
+    "Vortex": [[], [], 12, 1, [], []],
+    "Silver": [[], [], 12, 1, [], []],
+    "Knights": [[], [], 12, 1, [], []],
+    "Rust": [[], [], 12, 1, [], []],
+    "Paladins": [[], [], 12, 1, [], []],
+    "Monsoon": [[], [], 12, 1, [], []],
+    "Steel": [[], [], 12, 1, [], []],
+    "Sentinels": [[], [], 12, 1, [], []],
+    "Slackers": [[], [], 12, 1, [], []]
+}
 
-fifth_dont_make = set()
-eigth = set()
 
 print("Finding Permutations")
-possible_placings = list(permutations(list(curr_points.keys())))
-print(f"{len(possible_placings)} Permutations Found")
+
+top_4 = list(permutations(top_6, 4))
+middle_4 = list(permutations(list(curr_points.keys()), 4))
+bottom_4 = list(permutations(bottom_6, 4))
+
+
+def placings_generator(top, middle, bottom):
+    for t in top:
+        for m in middle:
+            for b in bottom:
+                placing = t + m + b
+                if len(set(placing)) == 12:
+                    yield tuple(placing)
+
+possible_placings = placings_generator(top_4, middle_4, bottom_4)
 
 
 index = 1
 for placings in possible_placings:
-    print(f"{round(index/len(possible_placings) * 100, 2)}% completed", end="\r")
+    print(f"{index} iterations completed", end="\r")
     index += 1
     temp_points = deepcopy(curr_points)
     for i in range(len(placings)):
@@ -42,43 +79,55 @@ for placings in possible_placings:
         
         temp_points[placings[i]].append(sum(temp_points[placings[i]]))
     result = sorted(temp_points.keys(), key=lambda x: sum(temp_points[x]) / 2, reverse=True)
-    # print(result)
-    if "Butchers" not in result[:2]:
-        # dont_make_final.append(placings)
-        dont_make_final.append(placings.index("Butchers"))
-        if placings.index("Butchers") == 4:
-            fifth_dont_make.add(placings[:5])
-    else:
+    
+    for team in team_results.keys():
+
+        placing = placings.index(team)
+        overall_placing = result.index(team)
+
+        if team not in result[:2]:
+            team_results[team][1].append(placing)
+        else:
+            team_results[team][0].append(placing)
+
+        # Best result
+        if team_results[team][2] > overall_placing:
+            team_results[team][2] = overall_placing
+            team_results[team][4] = [placings]
+        elif team_results[team][2] == overall_placing:
+            team_results[team][4].append(placings)
         
-        # make_final.append(placings)
-        make_final.append(placings.index("Butchers"))
-        if placings.index("Butchers") == 7 and placings[1] == "Vortex":
-            print(placings)
-            print(temp_points)
-            print()
+        # Worst result
+        if team_results[team][3] < overall_placing:
+            team_results[team][3] = overall_placing
+            team_results[team][5] = [placings]
+        elif team_results[team][3] == overall_placing:
+            team_results[team][5].append(placings)
 
-print("Make final : Don't make final")
-print(f"{len(make_final)} : {len(dont_make_final)}")
+for team in team_results.keys():
 
-# for placing in dont_make_final:
-#     print(placing)
 
-# winners = [x[0] for x in dont_make_final if x[0] == "Vortex"]
-# print(len(winners))
-# print(mode(winners))
+    make_final = team_results[team][0]
+    dont_make_final = team_results[team][1]
 
-print(sum(make_final) / len(make_final))
-print(max(make_final))
-print(sum(dont_make_final) / len(dont_make_final))
-print(min(dont_make_final))
+    print(f"Team: {team}")
 
-# [print(x) for x in fifth_dont_make]
-[print(x) for x in eigth]
+    print(f"Chances of making final: {len(make_final)} : {len(dont_make_final)}")
 
-# for result in output_points:
-#     for team, points in result.items():
-#         print(f"{team}: {sum(points)}")
-#     print()
+    if (make_final):
+        print(f"Average place where make final: {(sum(make_final) / len(make_final)) + 1}")
+        print(f"Lowest place where make final: {max(make_final) + 1}")
 
-# for i in range(len(curr_points)):
-#     for place in range(len(placing_points)):
+    if (dont_make_final):
+        print(f"Average place where don't make final: {(sum(dont_make_final) / len(dont_make_final)) + 1}")
+        print(f"Highest place where don't make final: {min(dont_make_final) + 1}")
+
+    print(f"Highest possible overall result: {team_results[team][2] + 1}")
+    # print("Possible results:")
+    # [print(x) for x in team_results[team][4][:10]]
+
+    print(f"Lowest possible overall result: {team_results[team][3] + 1}")
+    # print("Possible results:")
+    # [print(x) for x in team_results[team][5][:10]]
+
+    print()
