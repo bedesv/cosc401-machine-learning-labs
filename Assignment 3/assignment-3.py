@@ -23,33 +23,68 @@ def linear_regression_1d(input):
 
 import numpy as np
 
-def linear_regression(xs, ys):
+def linear_regression(xs, ys, basis_functions=[lambda x: x], penalty=0):
     """
-        Takes two numpy arrays as input: the first is the input part of the 
-        training data which is an min array (design matrix), while the second 
-        is the output part of the training data which is a one-dimensional 
-        array (vector) with m elements. Return the one-dimensional array 
-        (vector) θ, with (n + 1) elements, which contains the least-squares 
-        regression coefficients of the features; the first ("extra") value is the intercept.
+        takes xs (training input), ys (training output), and basis_functions 
+        which is a list of basis functions and returns a one-dimensional array 
+        (vector) of coefficients where the first elements is the offset and 
+        the rest are the coefficients of the corresponding basis functions. 
+        Each basis function takes a complete input vector and returns a scalar 
+        which is the value of the basis function for that input. When functions 
+        are not provided, the algorithm should behave as an ordinary linear 
+        regression using normal equations.
     """
-    X = np.c_[np.ones(len(ys)), xs]
+    
+    new_xs = [np.array([]) for _ in range(len(xs))]
+    
+    for func in basis_functions:
+        for i in range(len(xs)):
+            new_xs[i] = np.append(new_xs[i], [func(xs[i])])
 
-    return np.linalg.inv(X.T @ X) @ X.T @ ys
+    X = np.c_[np.ones(len(ys)), new_xs]
+
+    return np.linalg.inv(X.T @ X + penalty * np.identity(len(X[0]))) @ X.T @ ys
 
 import math
-def logistic_regression(xs, ys, alpha, num_interations):
-
+def logistic_regression(xs, ys, alpha, num_iterations):
+    """
+        Takes as input a training data set and returns a model that we can 
+        use to classify new feature vectors. The xs and ys parameters are 
+        the same as in previous questions: a two-dimensional array and a 
+        one-dimensional array. The alpha parameter is the training/learning 
+        rate, while the num_iterations is the number of iterations to 
+        perform - that is, how many times to loop over the entire dataset.
+    """
     sigmoid = lambda x: 1 / (1 + math.exp(-x))
 
+    xs = np.c_[np.ones(len(ys)), xs]
+    theta = np.zeros(len(xs[0]))
+    for _ in range(num_iterations):
+        for i in range(len(xs)):
+            theta += alpha * (ys[i] - sigmoid(theta @ xs[i])) * xs[i]
+    return lambda x: sigmoid(theta @ np.insert(x, 0, 1))
+    
+
+    
 
 
 
-xs = np.arange(5).reshape((-1, 1))
-ys = np.arange(1, 11, 2)
-print(linear_regression(xs, ys))
 
 
-xs = np.array([[1, 2, 3, 4],
-               [6, 2, 9, 1]]).T
-ys = np.array([7, 5, 14, 8]).T
-print(linear_regression(xs, ys))
+
+if __name__ == "__main__":
+    # we set the seed to some number so we can replicate the computation
+    np.random.seed(0)
+
+    xs = np.arange(-1, 1, 0.1).reshape(-1, 1)
+    m, n = xs.shape
+    # Some true function plus some noise:
+    ys = (xs**2 - 3*xs + 2 + np.random.normal(0, 0.5, (m, 1))).ravel()
+
+    functions = [lambda x: x[0], lambda x: x[0]**2, lambda x: x[0]**3, lambda x: x[0]**4,
+        lambda x: x[0]**5, lambda x: x[0]**6, lambda x: x[0]**7, lambda x: x[0]**8]
+
+    for penalty in [0, 0.01, 0.1, 1, 10]:
+        with np.printoptions(precision=5, suppress=True):
+            print(linear_regression(xs, ys, basis_functions=functions, penalty=penalty)
+                .reshape((-1, 1)), end="\n\n")
