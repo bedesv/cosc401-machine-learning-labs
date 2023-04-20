@@ -48,6 +48,7 @@ team_results = {
     "Slackers": [[], [], 12, 1, [], []]
 }
 
+butchers_dont_make_final = set()
 
 print("Finding Permutations")
 
@@ -87,6 +88,8 @@ for placings in possible_placings:
 
         if team not in result[:2]:
             team_results[team][1].append(placing)
+            if team == "Butchers":
+                butchers_dont_make_final.add(tuple(placings[:placing + 1]))
         else:
             team_results[team][0].append(placing)
 
@@ -104,30 +107,35 @@ for placings in possible_placings:
         elif team_results[team][3] == overall_placing:
             team_results[team][5].append(placings)
 
-for team in team_results.keys():
+with open("results2.txt", 'w') as output_file:
+    for team in team_results.keys():
 
 
-    make_final = team_results[team][0]
-    dont_make_final = team_results[team][1]
+        make_final = team_results[team][0]
+        dont_make_final = team_results[team][1]
 
-    print(f"Team: {team}")
+        output_file.write(f"Team: {team}")
 
-    print(f"Chances of making final: {len(make_final)} : {len(dont_make_final)}")
+        output_file.write(f"Chances of making final: {len(make_final)} : {len(dont_make_final)}")
 
-    if (make_final):
-        print(f"Average place where make final: {(sum(make_final) / len(make_final)) + 1}")
-        print(f"Lowest place where make final: {max(make_final) + 1}")
+        if (make_final):
+            output_file.write(f"Average place where make final: {(sum(make_final) / len(make_final)) + 1}")
+            output_file.write(f"Lowest place where make final: {max(make_final) + 1}")
 
-    if (dont_make_final):
-        print(f"Average place where don't make final: {(sum(dont_make_final) / len(dont_make_final)) + 1}")
-        print(f"Highest place where don't make final: {min(dont_make_final) + 1}")
+        if (dont_make_final):
+            output_file.write(f"Average place where don't make final: {(sum(dont_make_final) / len(dont_make_final)) + 1}")
+            output_file.write(f"Highest place where don't make final: {min(dont_make_final) + 1}")
 
-    print(f"Highest possible overall result: {team_results[team][2] + 1}")
-    # print("Possible results:")
-    # [print(x) for x in team_results[team][4][:10]]
+        output_file.write(f"Highest possible overall result: {team_results[team][2] + 1}")
+        # print("Possible results:")
+        # [print(x) for x in team_results[team][4][:10]]
 
-    print(f"Lowest possible overall result: {team_results[team][3] + 1}")
-    # print("Possible results:")
-    # [print(x) for x in team_results[team][5][:10]]
+        output_file.write(f"Lowest possible overall result: {team_results[team][3] + 1}")
+        # print("Possible results:")
+        # [print(x) for x in team_results[team][5][:10]]
 
-    print()
+        output_file.write("\n")
+
+        [output_file.write(x) for x in butchers_dont_make_final]
+
+
