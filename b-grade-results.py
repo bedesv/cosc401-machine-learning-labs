@@ -2,6 +2,11 @@ from itertools import permutations, product
 from copy import deepcopy
 from statistics import mode
 
+import time
+
+start = time.time()
+
+
 placing_points = [20, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3]
 
 top_6 = ["Black",
@@ -35,7 +40,7 @@ curr_points = {
 
 team_results = dict()
 
-[team_results.__setitem__(key, [[], [], 12, 1, [], []]) for key in curr_points.keys()]
+[team_results.__setitem__(key, [[], [], 11, 1, [], []]) for key in curr_points.keys()]
 
 # {
 #     "Butchers": [[], [], 12, 1, [], []],
@@ -145,3 +150,6 @@ with open("results3.txt", 'w') as output_file:
     # [output_file.write(f"{x}\n") for x in butchers_dont_make_final]
 
 
+end = time.time()
+
+print(end - start)

@@ -1,0 +1,70 @@
+Team: Black
+Chances of making final: 561764 : 405916
+Average place where make final: 2.3638111377731574
+Lowest place where make final: 4
+Average place where don't make final: 2.6884774189733838
+Highest place where don't make final: 1
+Highest possible overall result: 1
+Lowest possible overall result: 7
+
+Team: Valhalla
+Chances of making final: 429360 : 538320
+Average place where make final: 2.3698528041736537
+Lowest place where make final: 4
+Average place where don't make final: 2.6038044285926585
+Highest place where don't make final: 1
+Highest possible overall result: 1
+Lowest possible overall result: 8
+
+Team: Hornets
+Chances of making final: 518392 : 449288
+Average place where make final: 2.3479991975184804
+Lowest place where make final: 4
+Average place where don't make final: 2.675379711899717
+Highest place where don't make final: 1
+Highest possible overall result: 1
+Lowest possible overall result: 7
+
+Team: Expose
+Chances of making final: 317952 : 649728
+Average place where make final: 2.4347826086956523
+Lowest place where make final: 4
+Average place where don't make final: 2.5319148936170213
+Highest place where don't make final: 1
+Highest possible overall result: 1
+Lowest possible overall result: 8
+
+Team: Wasps
+Chances of making final: 36016 : 931664
+Average place where make final: 5.427865393158596
+Lowest place where make final: 8
+Average place where don't make final: 8.618761699496815
+Highest place where don't make final: 5
+Highest possible overall result: 1
+Lowest possible overall result: 8
+
+Team: Gold
+Chances of making final: 70232 : 897448
+Average place where make final: 5.7492595967650075
+Lowest place where make final: 8
+Average place where don't make final: 8.715265954127705
+Highest place where don't make final: 5
+Highest possible overall result: 1
+Lowest possible overall result: 8
+
+Team: Bronze
+Chances of making final: 0 : 967680
+Average place where don't make final: 8.5
+Highest place where don't make final: 5
+Highest possible overall result: 3
+Lowest possible overall result: 8
+
+Team: TKT
+Chances of making final: 1644 : 966036
+Average place where make final: 5.068126520681266
+Lowest place where make final: 6
+Average place where don't make final: 8.505840362056901
+Highest place where don't make final: 5
+Highest possible overall result: 1
+Lowest possible overall result: 8
+
