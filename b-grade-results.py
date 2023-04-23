@@ -114,28 +114,28 @@ with open("results2.txt", 'w') as output_file:
         make_final = team_results[team][0]
         dont_make_final = team_results[team][1]
 
-        output_file.write(f"Team: {team}")
+        output_file.write(f"Team: {team}\n")
 
-        output_file.write(f"Chances of making final: {len(make_final)} : {len(dont_make_final)}")
+        output_file.write(f"Chances of making final: {len(make_final)} : {len(dont_make_final)}\n")
 
         if (make_final):
-            output_file.write(f"Average place where make final: {(sum(make_final) / len(make_final)) + 1}")
-            output_file.write(f"Lowest place where make final: {max(make_final) + 1}")
+            output_file.write(f"Average place where make final: {(sum(make_final) / len(make_final)) + 1}\n")
+            output_file.write(f"Lowest place where make final: {max(make_final) + 1}\n")
 
         if (dont_make_final):
-            output_file.write(f"Average place where don't make final: {(sum(dont_make_final) / len(dont_make_final)) + 1}")
-            output_file.write(f"Highest place where don't make final: {min(dont_make_final) + 1}")
+            output_file.write(f"Average place where don't make final: {(sum(dont_make_final) / len(dont_make_final)) + 1}\n")
+            output_file.write(f"Highest place where don't make final: {min(dont_make_final) + 1}\n")
 
-        output_file.write(f"Highest possible overall result: {team_results[team][2] + 1}")
+        output_file.write(f"Highest possible overall result: {team_results[team][2] + 1}\n")
         # print("Possible results:")
         # [print(x) for x in team_results[team][4][:10]]
 
-        output_file.write(f"Lowest possible overall result: {team_results[team][3] + 1}")
+        output_file.write(f"Lowest possible overall result: {team_results[team][3] + 1}\n")
         # print("Possible results:")
         # [print(x) for x in team_results[team][5][:10]]
 
         output_file.write("\n")
 
-        [output_file.write(x) for x in butchers_dont_make_final]
+    [output_file.write(f"{x}\n") for x in butchers_dont_make_final]
 
 
