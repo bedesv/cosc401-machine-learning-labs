@@ -4,51 +4,55 @@ from statistics import mode
 
 placing_points = [20, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3]
 
-top_6 = ["Butchers",
-    "Raiders",
-    "Drones",
-    "Vortex",
-    "Silver",
-    "Rust"]
+top_6 = ["Black",
+    "Valhalla",
+    "Hornets",
+    "Expose",
+    "Hurricanes",
+    "Justice"]
 
-bottom_6 = ["Paladins",
-    "Monsoon",
-    "Steel",
-    "Sentinels",
-    "Knights",
-    "Slackers"]
+bottom_6 = ["Wasps",
+    "Gold",
+    "Bronze",
+    "TKT",
+    "Bailiffs",
+    "Jotnar"]
 
 curr_points = {
-    "Butchers": [16, 20],
-    "Raiders": [None, 16],
-    "Drones": [20, 9],
-    "Vortex": [None, 12],
-    "Silver": [9, 14],
-    "Knights": [12, 8],
-    "Rust": [10, 10],
-    "Paladins": [14, 7],
-    "Monsoon": [None, 6],
-    "Steel": [8, 3],
-    "Sentinels": [7, 4],
-    "Slackers": [6, 5]
+    "Black": [16, 20],
+    "Valhalla": [14, 16],
+    "Hornets": [20, 14],
+    "Expose": [12, 12],
+    "Hurricanes": [10, 10],
+    "Justice": [9, 9],
+    "Wasps": [6, 8],
+    "Gold": [8, 7],
+    "Bronze": [3, 6],
+    "TKT": [7, 5],
+    "Bailiffs": [4, 4],
+    "Jotnar": [5, 3]
 }
 
-team_results = {
-    "Butchers": [[], [], 12, 1, [], []],
-    "Raiders": [[], [], 12, 1, [], []],
-    "Drones": [[], [], 12, 1, [], []],
-    "Vortex": [[], [], 12, 1, [], []],
-    "Silver": [[], [], 12, 1, [], []],
-    "Knights": [[], [], 12, 1, [], []],
-    "Rust": [[], [], 12, 1, [], []],
-    "Paladins": [[], [], 12, 1, [], []],
-    "Monsoon": [[], [], 12, 1, [], []],
-    "Steel": [[], [], 12, 1, [], []],
-    "Sentinels": [[], [], 12, 1, [], []],
-    "Slackers": [[], [], 12, 1, [], []]
-}
+team_results = dict()
 
-butchers_dont_make_final = set()
+[team_results.__setitem__(key, [[], [], 12, 1, [], []]) for key in curr_points.keys()]
+
+# {
+#     "Butchers": [[], [], 12, 1, [], []],
+#     "Raiders": [[], [], 12, 1, [], []],
+#     "Drones": [[], [], 12, 1, [], []],
+#     "Vortex": [[], [], 12, 1, [], []],
+#     "Silver": [[], [], 12, 1, [], []],
+#     "Knights": [[], [], 12, 1, [], []],
+#     "Rust": [[], [], 12, 1, [], []],
+#     "Paladins": [[], [], 12, 1, [], []],
+#     "Monsoon": [[], [], 12, 1, [], []],
+#     "Steel": [[], [], 12, 1, [], []],
+#     "Sentinels": [[], [], 12, 1, [], []],
+#     "Slackers": [[], [], 12, 1, [], []]
+# }
+
+# butchers_dont_make_final = set()
 
 print("Finding Permutations")
 
@@ -88,8 +92,8 @@ for placings in possible_placings:
 
         if team not in result[:2]:
             team_results[team][1].append(placing)
-            if team == "Butchers":
-                butchers_dont_make_final.add(tuple(placings[:placing + 1]))
+            # if team == "Justice":
+            #     butchers_dont_make_final.add(tuple(placings[:placing + 1]))
         else:
             team_results[team][0].append(placing)
 
@@ -107,7 +111,9 @@ for placings in possible_placings:
         elif team_results[team][3] == overall_placing:
             team_results[team][5].append(placings)
 
-with open("results2.txt", 'w') as output_file:
+print("Saving output")
+
+with open("results3.txt", 'w') as output_file:
     for team in team_results.keys():
 
 
@@ -136,6 +142,6 @@ with open("results2.txt", 'w') as output_file:
 
         output_file.write("\n")
 
-    [output_file.write(f"{x}\n") for x in butchers_dont_make_final]
+    # [output_file.write(f"{x}\n") for x in butchers_dont_make_final]
 
 
