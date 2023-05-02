@@ -9,12 +9,12 @@ start = time.time()
 
 placing_points = [20, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3]
 
-top_6 = ["Black",
+top_6 = ["Justice","Black",
     "Valhalla",
     "Hornets",
     "Expose",
     "Hurricanes",
-    "Justice"]
+    ]
 
 bottom_6 = ["Wasps",
     "Gold",
@@ -24,12 +24,12 @@ bottom_6 = ["Wasps",
     "Jotnar"]
 
 curr_points = {
+    "Justice": [9, 9],
     "Black": [16, 20],
     "Valhalla": [14, 16],
     "Hornets": [20, 14],
     "Expose": [12, 12],
     "Hurricanes": [10, 10],
-    "Justice": [9, 9],
     "Wasps": [6, 8],
     "Gold": [8, 7],
     "Bronze": [3, 6],
@@ -76,6 +76,8 @@ def placings_generator(top, middle, bottom):
 
 possible_placings = placings_generator(top_4, middle_4, bottom_4)
 
+justice_3_4 = 0
+
 
 index = 1
 for placings in possible_placings:
@@ -90,6 +92,11 @@ for placings in possible_placings:
         temp_points[placings[i]].append(sum(temp_points[placings[i]]))
     result = sorted(temp_points.keys(), key=lambda x: sum(temp_points[x]) / 2, reverse=True)
     
+    if "Justice" in result[2:4]:
+        justice_3_4 += 1
+    else:
+        continue
+
     for team in team_results.keys():
 
         placing = placings.index(team)
@@ -153,3 +160,5 @@ with open("results3.txt", 'w') as output_file:
 end = time.time()
 
 print(end - start)
+
+print(f"Justice make 3/4: {justice_3_4}")
