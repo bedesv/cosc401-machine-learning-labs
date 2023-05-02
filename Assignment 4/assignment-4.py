@@ -1,6 +1,7 @@
 from collections import namedtuple
 import numpy as np
 from statistics import mean
+import hashlib
 
 class ConfusionMatrix(namedtuple("ConfusionMatrix",
                                  "true_positive false_negative "
@@ -68,6 +69,64 @@ def k_means(dataset, centroids):
         
         new_centroids = [np.array([mean(x[j] for x in classes[i]) for j in range(len(old_centroids[i]))]) if classes[i] else old_centroids[i] for i in range(len(old_centroids))]
     return old_centroids
+
+def goodness(clusters):
+    
+    compactness = []
+
+    for cluster in clusters:
+        max_distance = 0
+        for i in range(len(cluster)):
+            for j in range(i + 1, len(cluster)):
+                distance = np.linalg.norm(cluster[i] - cluster[j])
+                if distance > max_distance:
+                    max_distance = distance
+        compactness.append(max_distance)
+
+
+    separation = mean(min(x) for x in distances)
+
+    compactness = mean(max(x) for x in distances)
+
+    return separation / compactness
+
+def cluster_points(centroids, dataset):
+    classes = [[] for _ in centroids]
+
+    for point in dataset:
+        nearest_centroid_index = min(range(len(centroids)), key=lambda x: np.linalg.norm(point - centroids[x])) 
+        classes[nearest_centroid_index].append(point)
+    
+    return classes
+
+def pseudo_random(seed=0xdeadbeef):
+    """generate an infinite stream of pseudo-random numbers"""
+    state = (0xffffffff & seed)/0xffffffff
+    while True:
+        h = hashlib.sha256()
+        h.update(bytes(str(state), encoding='utf8'))
+        bits = int.from_bytes(h.digest()[-8:], 'big')
+        state = bits >> 32
+        r = (0xffffffff & bits)/0xffffffff
+        yield r
+
+def generate_random_vector(bounds, r):
+    return np.array([(high - low) * next(r) + low for low, high in bounds])
+
+
+def k_means_random_restart(dataset, k, restarts, seed=None):
+    bounds = list(zip(np.min(dataset, axis=0), np.max(dataset, axis=0)))
+    r = pseudo_random(seed=seed) if seed else pseudo_random()
+    models = []
+    for _ in range(restarts):
+        random_centroids = tuple(generate_random_vector(bounds, r) 
+                                 for _ in range(k))
+        new_centroids = k_means(dataset, random_centroids)
+        clusters = cluster_points(new_centroids, dataset)
+        if any(len(c) == 0 for c in clusters):
+            continue
+        models.append((goodness(clusters), new_centroids))
+    return max(models, key=lambda x: x[0])[1]
         
         
 
@@ -113,35 +172,63 @@ if __name__ == "__main__":
     #                                             int(fp), int(tn))))
     # print(sorted(label for (label, _) in roc_non_dominated(classifiers)))
 
+    # dataset = np.array([
+    #     [0.1, 0.1],
+    #     [0.2, 0.2],
+    #     [0.8, 0.8],
+    #     [0.9, 0.9]
+    # ])
+    # centroids = (np.array([0., 0.]), np.array([1., 1.]))
+    # for c in k_means(dataset, centroids):
+    #     print(c)
+
+    # dataset = np.array([
+    #     [0.125, 0.125],
+    #     [0.25, 0.25],
+    #     [0.75, 0.75],
+    #     [0.875, 0.875]
+    # ])
+    # centroids = (np.array([0., 1.]), np.array([1., 0.]))
+    # for c in k_means(dataset, centroids):
+    #     print(c)
+
+    # dataset = np.array([
+    #     [0.1, 0.3],
+    #     [0.4, 0.6],
+    #     [0.1, 0.2],
+    #     [0.2, 0.1]
+    # ])
+    # centroids = (np.array([2., 5.]),)
+    # for c in k_means(dataset, centroids):
+    #     print(c)
+
+    # import sklearn.datasets
+    # import sklearn.utils
+
+    # iris = sklearn.datasets.load_iris()
+    # data, target = sklearn.utils.shuffle(iris.data, iris.target, random_state=0)
+    # train_data, train_target = data[:-5, :], target[:-5]
+    # test_data, test_target = data[-5:, :], target[-5:]
+
+
+    # centroids = (
+    #     np.array([5.8, 2.5, 4.5, 1.5]),
+    #     np.array([6.8, 3.0, 5.7, 2.1]),
+    #     np.array([5.0, 3.5, 1.5, 0.5])
+    # )
+    # for c in k_means(train_data, centroids):
+    #     print(c)
+
     dataset = np.array([
         [0.1, 0.1],
         [0.2, 0.2],
         [0.8, 0.8],
         [0.9, 0.9]
     ])
-    centroids = (np.array([0., 0.]), np.array([1., 1.]))
-    for c in k_means(dataset, centroids):
-        print(c)
+    centroids = k_means_random_restart(dataset, k=2, restarts=5)
 
-    dataset = np.array([
-        [0.125, 0.125],
-        [0.25, 0.25],
-        [0.75, 0.75],
-        [0.875, 0.875]
-    ])
-    centroids = (np.array([0., 1.]), np.array([1., 0.]))
-    for c in k_means(dataset, centroids):
-        print(c)
-
-    dataset = np.array([
-        [0.1, 0.3],
-        [0.4, 0.6],
-        [0.1, 0.2],
-        [0.2, 0.1]
-    ])
-    centroids = (np.array([2., 5.]),)
-    for c in k_means(dataset, centroids):
-        print(c)
+    for c in sorted([f"{x:8.3}" for x in centroid] for centroid in centroids):
+        print(" ".join(c))
 
     import sklearn.datasets
     import sklearn.utils
@@ -151,12 +238,14 @@ if __name__ == "__main__":
     train_data, train_target = data[:-5, :], target[:-5]
     test_data, test_target = data[-5:, :], target[-5:]
 
+    centroids = k_means_random_restart(train_data, k=3, restarts=10)
 
-    centroids = (
-        np.array([5.8, 2.5, 4.5, 1.5]),
-        np.array([6.8, 3.0, 5.7, 2.1]),
-        np.array([5.0, 3.5, 1.5, 0.5])
-    )
-    for c in k_means(train_data, centroids):
-        print(c)
 
+    # We suggest you check which centroid each 
+    # element in test_data is closest to, then see test_target.
+    # Note cluster 0 -> label 1
+    #      cluster 1 -> label 2
+    #      cluster 2 -> label 0
+
+    for c in sorted([f"{x:7.2}" for x in centroid] for centroid in centroids):
+        print(" ".join(c))
