@@ -2,6 +2,7 @@ from collections import namedtuple
 import numpy as np
 from statistics import mean
 import hashlib
+from itertools import combinations
 
 class ConfusionMatrix(namedtuple("ConfusionMatrix",
                                  "true_positive false_negative "
@@ -72,23 +73,25 @@ def k_means(dataset, centroids):
 
 def goodness(clusters):
     
-    compactness = []
+    # compactness = []
+    # for cluster in clusters:
+    #     max_distance = 0
+    #     for i in range(len(cluster)):
+    #         for j in range(i + 1, len(cluster)):
+    #             distance = np.linalg.norm(cluster[i] - cluster[j])
+    #             if distance > max_distance:
+    #                 max_distance = distance
+    #     compactness.append(max_distance)
 
-    for cluster in clusters:
-        max_distance = 0
-        for i in range(len(cluster)):
-            for j in range(i + 1, len(cluster)):
-                distance = np.linalg.norm(cluster[i] - cluster[j])
-                if distance > max_distance:
-                    max_distance = distance
-        compactness.append(max_distance)
+    compactness = [max(np.linalg.norm(i - j) for i, j in combinations(cluster, 2)) for cluster in clusters]
 
+    # separation = []
+    # for cluster_a, cluster_b in combinations(clusters, 2):
+    #     separation.append(min(np.linalg.norm(i - j) for i in cluster_a for j in cluster_b))
 
-    separation = mean(min(x) for x in distances)
+    separation = [min(np.linalg.norm(i - j) for i in cluster_a for j in cluster_b) for cluster_a, cluster_b in combinations(clusters, 2)]
 
-    compactness = mean(max(x) for x in distances)
-
-    return separation / compactness
+    return mean(separation) / mean(compactness)
 
 def cluster_points(centroids, dataset):
     classes = [[] for _ in centroids]
