@@ -69,6 +69,7 @@ class weighted_bootstrap:
     
     def __next__(self):
         sample = []
+        indexes = []
         weight_running_sum = [sum(self.weights[:i + 1]) for i in range(len(self.weights))]
         
         while len(sample) < self.sample_size:
@@ -76,8 +77,9 @@ class weighted_bootstrap:
             for index in range(len(weight_running_sum)):
                 if weight_running_sum[index] > r:
                     break
+            indexes.append(index)
             sample.append(self.dataset[index])
-        return np.array(sample)
+        return np.array(sample), indexes
 
 import math
 def adaboost(learner, dataset, n_models):
@@ -91,21 +93,22 @@ def adaboost(learner, dataset, n_models):
     bootstrapper = weighted_bootstrap(dataset, [1/len(dataset) for _ in range(len(dataset))], len(dataset))
 
     for i in range(n_models):
-        sample = next(bootstrapper)
+        sample, indexes = next(bootstrapper)
         new_model = learner(sample)
         error = 0
-        for i in range(len(sample)):
-            data = sample[i]
+        for i in indexes:
+            data = dataset[i]
             if new_model(data[:-1]) != data[-1]:
                 error += bootstrapper.weights[i]
+
         models.append((new_model, error))
         if error == 0 or error >= 0.5:
-            continue
-        
+            break
         for i in range(len(dataset)):
             instance = dataset[i]
             if new_model(instance[:-1]) == instance[-1]:
                 bootstrapper.weights[i] *= (error / (1-error))
+
         bootstrapper.weights = [weight / sum(bootstrapper.weights) for weight in bootstrapper.weights]
     
     def boosted_ensemble_model(input):
@@ -120,7 +123,7 @@ def adaboost(learner, dataset, n_models):
             else:
                 weights[output] += (-1 * math.log(error / (1-error)))
         return max(weights.keys(), key=lambda x: weights[x])
-    
+
     return boosted_ensemble_model
 
 
@@ -149,5 +152,67 @@ if __name__ == "__main__":
         return lambda v: model.predict(np.array([v]))[0]
 
     boosted = adaboost(linear_learner, dataset, 10)
+    output, expected = [], []
     for (v, c) in zip(test_data, test_target):
+        output.append(int(boosted(v)))
+        expected.append(c)
         print(int(boosted(v)), c)
+    print()
+
+    if not output == expected:
+        print("Test 1 failed")
+        [print(output[x], expected[x]) for x in range(len(output))]
+        print()
+
+    import sklearn.datasets
+    import sklearn.utils
+    import sklearn.linear_model
+    iris = sklearn.datasets.load_iris()
+    data, target = sklearn.utils.shuffle(iris.data, iris.target, random_state=0)
+    train_data, train_target = data[:-5, :], target[:-5]
+    test_data, test_target = data[-5:, :], target[-5:]
+    dataset = np.hstack((train_data, train_target.reshape((-1, 1))))
+    def linear_learner(dataset):
+        features, target = dataset[:, :-1], dataset[:, -1]
+        model = sklearn.linear_model.SGDClassifier(random_state=1, max_iter=1000, tol=0.001).fit(features, target)
+        return lambda v: model.predict(np.array([v]))[0]
+    boosted = adaboost(linear_learner, dataset, 10)
+    output, expected = [], []
+    for (v, c) in zip(test_data, test_target):
+        output.append(int(boosted(v)))
+        expected.append(c)
+        print(int(boosted(v)), c)
+    print()
+    if not output == expected:
+        print("Test 2 failed")
+        [print(output[x], expected[x]) for x in range(len(output))]
+        print()
+
+    	
+    import sklearn.datasets
+    import sklearn.utils
+    import sklearn.tree
+
+    wine = sklearn.datasets.load_wine()
+    data, target = sklearn.utils.shuffle(wine.data, wine.target, random_state=3)
+    train_data, train_target = data[:-5, :], target[:-5]
+    test_data, test_target = data[-5:, :], target[-5:]
+    dataset = np.hstack((train_data, train_target.reshape((-1, 1))))
+
+    def tree_learner(dataset):
+        features, target = dataset[:, :-1], dataset[:, -1]
+        model = sklearn.tree.DecisionTreeClassifier(random_state=1).fit(features, target)
+        return lambda v: model.predict(np.array([v]))[0]
+
+    boosted = adaboost(tree_learner, dataset, 10)
+    output, expected = [], []
+    for (v, c) in zip(test_data, test_target):
+        output.append(int(boosted(v)))
+        expected.append(c)
+        print(int(boosted(v)), c)
+    print()
+    if not output == expected:
+        print("Test 3 failed")
+        [print(output[x], expected[x]) for x in range(len(output))]
+            
+
