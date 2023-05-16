@@ -69,7 +69,6 @@ class weighted_bootstrap:
     
     def __next__(self):
         sample = []
-        indexes = []
         weight_running_sum = [sum(self.weights[:i + 1]) for i in range(len(self.weights))]
         
         while len(sample) < self.sample_size:
@@ -77,9 +76,9 @@ class weighted_bootstrap:
             for index in range(len(weight_running_sum)):
                 if weight_running_sum[index] > r:
                     break
-            indexes.append(index)
+            
             sample.append(self.dataset[index])
-        return np.array(sample), indexes
+        return np.array(sample)
 
 import math
 def adaboost(learner, dataset, n_models):
@@ -93,10 +92,10 @@ def adaboost(learner, dataset, n_models):
     bootstrapper = weighted_bootstrap(dataset, [1/len(dataset) for _ in range(len(dataset))], len(dataset))
 
     for i in range(n_models):
-        sample, indexes = next(bootstrapper)
+        sample = next(bootstrapper)
         new_model = learner(sample)
         error = 0
-        for i in indexes:
+        for i in range(len(dataset)):
             data = dataset[i]
             if new_model(data[:-1]) != data[-1]:
                 error += bootstrapper.weights[i]
