@@ -1,4 +1,4 @@
-def voting_ensemble(classifiers):
+def v(classifiers):
     """
         Takes as a parameter a list of classifiers, and 
         returns a new classifier that reports, for a given 
@@ -28,7 +28,7 @@ def pseudo_random(seed=0xDEADBEEF):
         r = (0xffffffff & bits)/0xffffffff
         yield r
 
-def bootstrap(dataset, sample_size):
+def g(dataset, sample_size):
     """
         Samples the given dataset to produce samples of sample_size
     """
@@ -42,20 +42,24 @@ def bootstrap(dataset, sample_size):
             sample.append(dataset[index])
         yield np.array(sample)
 
-def bagging_model(learner, dataset, n_models, sample_size):
-    """
-        Returns a new model based on the learner, but replicated 
-        n_models times over the bootstrapped dataset of size sample_size.
-    """
+# def bagging_model(learner, dataset, n_models, sample_size):
+#     """
+#         Returns a new model based on the learner, but replicated 
+#         n_models times over the bootstrapped dataset of size sample_size.
+#     """
 
-    models = []
+#     models = []
 
-    b_strap = bootstrap(dataset, sample_size)
-    for i in range(n_models):
-        sample = next(b_strap)
-        models.append(learner(sample))
+#     b_strap = bootstrap(dataset, sample_size)
+#     for _ in range(n_models):
+#         sample = next(b_strap)
+#         models.append(learner(sample))
     
-    return voting_ensemble(models)
+#     return voting_ensemble(models)
+
+def bagging_model(l,d,n,s):b=g(d,s);return v([l(next(b))for _ in[0]*n])
+
+bagging_model=lambda l,d,n,s:[b:=g(d,s),v([l(next(b))for _ in[0]*n])][1]
 
 class weighted_bootstrap:
     def __init__(self, dataset, weights, sample_size):
@@ -80,49 +84,63 @@ class weighted_bootstrap:
             sample.append(self.dataset[index])
         return np.array(sample)
 
-import math
-def adaboost(learner, dataset, n_models):
-    """
-        Builds a boosted ensemble model consisting of n_models simple 
-        models made from the learner, which were trained on weighted 
-        bootstrapped samples from the dataset.
-    """
-    models = []
 
-    bootstrapper = weighted_bootstrap(dataset, [1/len(dataset) for _ in range(len(dataset))], len(dataset))
+# def adaboost(learner, dataset, n_models):
+#     """
+#         Builds a boosted ensemble model consisting of n_models simple 
+#         models made from the learner, which were trained on weighted 
+#         bootstrapped samples from the dataset.
+#     """
+#     models = []
 
-    for i in range(n_models):
-        sample = next(bootstrapper)
-        new_model = learner(sample)
-        error = 0
-        for i in range(len(dataset)):
-            data = dataset[i]
-            if new_model(data[:-1]) != data[-1]:
-                error += bootstrapper.weights[i]
+#     bootstrapper = weighted_bootstrap(dataset, [1/len(dataset) for _ in range(len(dataset))], len(dataset))
 
-        models.append((new_model, error))
-        if error == 0 or error >= 0.5:
-            break
-        for i in range(len(dataset)):
-            instance = dataset[i]
-            if new_model(instance[:-1]) == instance[-1]:
-                bootstrapper.weights[i] *= (error / (1-error))
+#     for i in range(n_models):
+#         sample = next(bootstrapper)
+#         new_model = learner(sample)
+#         error = 0
+#         for i in range(len(dataset)):
+#             data = dataset[i]
+#             if new_model(data[:-1]) != data[-1]:
+#                 error += bootstrapper.weights[i]
+#         models.append((new_model, error))
+#         if error == 0 or error >= 0.5:
+#             break
+        
+#         for i in range(len(dataset)):
+#             instance = dataset[i]
+#             if new_model(instance[:-1]) == instance[-1]:
+#                 bootstrapper.weights[i] *= (error / (1-error))
 
-        bootstrapper.weights = [weight / sum(bootstrapper.weights) for weight in bootstrapper.weights]
+#         bootstrapper.weights = [weight / sum(bootstrapper.weights) for weight in bootstrapper.weights]
     
-    def boosted_ensemble_model(input):
-        weights = {}
-        for data in dataset:
-            weights[data[-1]] = 0
+#     def boosted_ensemble_model(input):
+#         weights = {}
+#         for data in dataset:
+#             weights[data[-1]] = 0
 
-        for model, error in models:
-            output = model(input)
-            if error == 0:
-                weights[output] += math.inf
-            else:
-                weights[output] += (-1 * math.log(error / (1-error)))
-        return max(weights.keys(), key=lambda x: weights[x])
+#         for model, error in models:
+#             output = model(input)
+#             if error == 0:
+#                 weights[output] += math.inf
+#             else:
+#                 weights[output] += (-1 * math.log(error / (1-error)))
+#         return max(weights.keys(), key=lambda x: weights[x])
 
+#     return boosted_ensemble_model
+
+import math
+def adaboost(p, d, n):
+    c=[];l=len(d);b=weighted_bootstrap(d,[1/l for _ in range(l)],l)
+    for i in range(n):
+        m=p(next(b));e=sum(b.weights[i]for i in range(l)if m(d[i][:-1])!=d[i][-1]);c.append((m,e))
+        if e==0 or e>=0.5:break
+        for i,j in enumerate(d):b.weights[i]*=(e/(1-e))if m(j[:-1])==j[-1]else 1
+        b.weights=[w/sum(b.weights) for w in b.weights]
+    def boosted_ensemble_model(i,w={}):
+        for data in d:w[data[-1]]=0
+        for m,e in c:w[m(i)]+=math.inf if e==0 else(-1*math.log(e/(1-e)))
+        return max(w.keys(),key=lambda x:w[x])
     return boosted_ensemble_model
 
 
